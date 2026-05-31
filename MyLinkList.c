@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include "linklist.h"
 
-//5.22
-//查找信息失败，而且namelen总是19
-//插入信息是成功的，插入函数里面包含了查找函数
-
 int main(void)
 {
 	LL *pList = initLL();
