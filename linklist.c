@@ -2,17 +2,6 @@
 #include <stdlib.h>
 #include "linklist.h"
 
- 
-////将学生信息载入节点
-//NODE* NodeByStu(int id ,char name[] ,int score)
-//{
-//	//分配了一个节点，现在要把数据加载到里面
-//	initNode(id, name, score);
-//	pTemp->data = ;
-//	pTemp->next = NULL;
-//	return pTemp;
-//}
-
 //初始化节点
 NODE* initNode(int id,char name[],int score)
 {
@@ -22,14 +11,8 @@ NODE* initNode(int id,char name[],int score)
 		printf("新建信息格失败，请再试一次呢\n");
 		return NULL;
 	}
-	//要搞一个判断，判断这个id是否已经存在
-	//遍历链表
-
-
 	int i = 0;
 	pTemp->data.id = id;
-	/*for (i = 0; name[i] != '\0'; i++)
-		pTemp->data.name[i] = name[i];*/
 	while (i < (int)(sizeof(pTemp->data.name)) - 1 && name[i] != '\0' && name[i] != '\n')
 	{
 		pTemp->data.name[i] = name[i];
@@ -76,12 +59,12 @@ NODE* movePointer(LL* pList, int id)
 }
 
 //空链表添加数据
-void appendList(LL* pList, int id,char name[],int score)
+int appendList(LL* pList, int id,char name[],int score)
 {
 	NODE* pTemp = initNode(id,name,score);
 	if (NULL == pTemp)
 	{
-		return;
+		return 0;
 	}
 	//链表没有数据
 	if (NULL == pList->pHead)
@@ -90,6 +73,7 @@ void appendList(LL* pList, int id,char name[],int score)
 	}
 	pList->length++;
 	pTemp = NULL;
+	return 1;
 }
 
 //头插或者中间插
@@ -103,11 +87,14 @@ int insertNode(LL* pList, int id, char name[], int score)
 	//空表直接用上面的函数
 	else if (NULL == pList->pHead)
 	{
-		appendList(pList, id, name, score);
-		return 0;
+		if (1 == appendList(pList, id, name, score))
+			return 1;
+		else
+			return 0;
 	}
-	int idx = findNode(pList, id);
-	if (1 == idx)
+	//findnode找到了就返回位置而不是下标
+	//没找到返回的-1
+	if (findNode(pList, id) > 0)
 	{
 		printf("数据库中已经有这个id了，添加失败~\n");
 		return 0;
@@ -117,14 +104,68 @@ int insertNode(LL* pList, int id, char name[], int score)
 	{
 		return 0;
 	}
+
+
+	//用头节点赋值给前驱节点
 	NODE* pPre = pList->pHead;
 	//pre,predecessor,前任，前辈，前驱
-	for (int i = 1; i < idx; i++)
+	//若表中只有一个数据，就不能进入循环，ppre就是head
+	while (NULL != pPre->next)
 	{
+		if (pPre->next->data.id > id)
+		//跳出时ppre是要插入的数据的上一个节点
+			break;
 		pPre = pPre->next;
 	}
+	//假如插入数据的id大于所有节点的id，那么ppre就会变成end，插入就要插到end后面
+	//ok
+	if (pPre == pList->pHead)
+	{
+		//插入到链表头部之前
+		if (pTemp->data.id < pPre->data.id)
+		{
+			pTemp->next = pList->pHead;
+			pList->pHead = pTemp;
+		}
+		//头部之后
+		else
+		{
+			pTemp->next = pList->pHead->next;
+			pList->pHead->next = pTemp;
+			//pList->pHead = pTemp;
+		}
+		pList->length++;
+		return 1;
+	}
+	if(pPre == pList->pEnd)
+		//当它来到end了，end就要变成ptemp
+	{
+		//pList->pEnd->next = NULL;
+		//插入到链表尾部
+	/*	if (pTemp->data.id > pPre->data.id)
+		{*/
+			pList->pEnd->next = pTemp;
+			pList->pEnd = pTemp;
+			//pTemp->next = pList->pHead;
+			//pList->pHead = pTemp;
+		//}
+	/*	else
+		{
+			pList->pEnd->next = pTemp;
+			pList->pEnd = pTemp;
+		}
+		return 1;*/
+		/*pList->pEnd->next = pTemp;
+		pList->pEnd = pTemp;*/
+		pList->length++;
+		return 1;
+	}
+	//如果一次循环也没有执行
+
+	//后面的ppre都是在要插入的数据之前
 	pTemp->next = pPre->next;
 	pPre->next = pTemp;
+	//pPre->next = pTemp;
 	pPre = NULL;
 	pList->length++;
 	pTemp = NULL;
@@ -149,37 +190,49 @@ int delNode(LL* pList, int id)
 		return 0;
 	}
 	int idx = findNode(pList, id);
+	//idx获取到要删除的节点的位置
 	int judge = 0;
 	NODE* pTemp = pList->pHead;
-	printf("该学生的信息：\n");
-	printfNode(pTemp);
-	printf("您确定要删除吗？是请按1，否请按2\n");
-	scanf_s("%d", &judge);
-	if (1 == judge)
+	NODE* pPre = pTemp;
+	//ppre是前驱
+	for (int i = 1; i < pList->length; i++)
 	{
-		//ptemp是要删除的节点
-		//ppre在删除节点前一个位置
-		NODE* pPre = pTemp;
-		for (int i = 1; i < idx; i++)
-		{
-			pPre = pTemp;
-			pTemp = pTemp->next;
-		}
+		if (pTemp->data.id == id)
+			break;
+		pPre = pTemp;
+		pTemp = pTemp->next;
 	}
-	else if(2 == judge)
+	if (pTemp->data.id == id)
 	{
-		printf("删除已取消~\n");
-		return 0;
+		printf("该学生的信息：\n");
+		printfNode(pTemp);
+		printf("您确定要删除吗？是请按1，否请按2\n");
+		scanf_s("%d", &judge);
+		if (1 == judge)
+		{
+			//ptemp是要删除的节点
+			//ppre在删除节点前一个位置
+			pPre->next = pTemp->next;
+			pList->length--;
+			free(pTemp);
+			return 1;
+		}
+		else if (2 == judge)
+		{
+			printf("删除已取消~\n");
+			return 0;
+		}
+		else
+		{
+			printf("无效选项，删除失败~\n");
+			return 0;
+		}
 	}
 	else
 	{
-		printf("无效选项，删除失败~\n");
+		printf("没有找到该学生\n");
 		return 0;
 	}
-	pList->length--;
-	free(pTemp);
-	
-	return 1;
 }
 
 //改
@@ -300,7 +353,8 @@ int modiNode(LL* pList, int id)
 }
 
 //查,不能用二分，因为链表不支持随机访问，也不能指针偏移
-//在改和查的地方用到了
+//在增、改和查的地方用到了
+//若找到了，就返回该数据的位置，>0
 int findNode(LL* pList, int id)
 {
 	if (NULL == pList || 0 == pList->length)
@@ -316,6 +370,7 @@ int findNode(LL* pList, int id)
 		if (pTemp->data.id == id)
 		{
 			//返回学生的位置,是用户看到的位置，不是下标
+			//如果找到的这个id是在第一位，那么他返回的值就是1
 			return i;
 		}
 		pTemp = pTemp->next;
@@ -370,7 +425,7 @@ void printfLL(LL* pList)
 {
 	if (NULL == pList || 0 == pList->length)
 	{
-		printf("数据库是空的，无法查看\n");
+		printf("数据库是空的，无法查看\n\n");
 		return;
 	}
 	NODE* pTemp = pList->pHead;

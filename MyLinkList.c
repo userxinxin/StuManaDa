@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+//#include <>
 #include "linklist.h"
-
+//我们还缺什么，数据库，可以用write的方式写到txt里
+// 
+//这个程序完成后再赋值一份，改成双向链表
 int main(void)
 {
+	//FILE* pFile = NULL;
 	LL *pList = initLL();
 	int number = 0;
+	//用写入模式打开文件
+	//fopen_s(&pFile, "database.txt", "w+");
 	//创建链表
 	printf("欢迎来到学生信息管理数据库！\n");
 	while (1) 
@@ -30,15 +36,20 @@ int main(void)
 				int i = 0;
 				char name[20] = { '\0' };
 				printf("请输入新增学生的信息\n");
+				reid:
 				printf("id：");
 				scanf_s("%d", &id);
+				if (id <= 0)
+				{
+					printf("id不能为0或负数，请重新输入\n");
+					goto reid;
+				}
 				//吸走垃圾字符
 				while ((getchar()) != '\n');
 				printf("姓名:");
 				int a = 0;
 				for (i = 0; i < 19; i++)
 				{
-
 					scanf_s("%c", &name[i], 1);
 					if ('\n' == name[i])
 					{
@@ -47,14 +58,18 @@ int main(void)
 					}
 				}
 				name[i] = '\0';
+				rescore:
 				printf("分数：");
 				scanf_s("%d", &score);
+				if(score < 0 || score > 750)
+				{
+					printf("分数必须在0到750之间，请重新输入\n\n");
+					goto rescore;
+				}
 				//输入之后应该按id重新将表的内容排序
 				if (1 == insertNode(pList, id, name, score))
 					printf("添加成功~\n");
-				//findNode(pList, id);
 				printf("\n");
-				//printf("%d\n", pList->pHead->data.namelen);
 			}
 			else if (2 == innumber)
 			{
@@ -94,7 +109,7 @@ int main(void)
 			}
 			else
 			{
-				printf("输入的数据有误，再输一下嘞\n");
+				printf("输入的数据有误，请重试\n");
 				goto ininput;
 			}
 		}
@@ -102,13 +117,14 @@ int main(void)
 			break;
 		else
 		{
-			printf("输入的数据有误，再输一下嘞\n");
+			printf("输入的数据有误，请重试\n");
 			goto input;
 		}
+		//fwrite(pList, sizeof(), 1, pFile);
+		//fwrite的参数1是要写入的内容，参数2是内容长度，参数四是文件指针
 	}
 
-	//如果把数据存储，最后就不用释放了，而是更新
-	//如果在程序中没有释放指针，下一次运行程序会被上一次未释放的内存影响吗
+	//fclose(pFile);
 	delLL(&pList);
 	//delLL(pList);
 

@@ -44,7 +44,7 @@ LL* initLL();
 
 NODE* movePointer(LL* pList, int id);
 
-void appendList(LL* pList, int id, char name[], int score);
+int appendList(LL* pList, int id, char name[], int score);
 
 int insertNode(LL* pList, int id, char name[], int score);
 
